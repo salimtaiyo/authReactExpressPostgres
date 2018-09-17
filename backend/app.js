@@ -18,7 +18,27 @@ app.get('/users/all', (req,res,next) => {
 
 // posting a new user
 app.post('/users/new', (req,res,next) => {
-    console.log('req.body', req.body);
+    const { username, password } = req.body;
+    pool.query('SELECT * FROM users WHERE username = $1', 
+    [username],
+    (q0_err, q0_res) => {
+        if(q0_err) { return   next(q0_err)}
+        if(q0_res.rows.length === 0){
+            pool.query('INSERT INTO users(username,password) VALUES($1,$2)',
+            [username,password],
+            (q1_err,q1_res) => {
+                if(q1_err) {return next(q1_err)}
+            }
+        )
+        }
+        else{
+            res.status(409).json({
+                type: 'error',
+                msg: 'this username has alraedy been taken'
+            });
+        }
+    } 
+)
 })
 
 // error handler 
